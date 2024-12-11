@@ -1,3 +1,11 @@
+// Ejercicio 5. Convertir el servidor UDP en multi-proceso siguiendo el patrón pre-fork. Una vez
+// asociado el socket a la dirección local con bind(2), crear varios procesos que llamen a recvfrom(2)
+// de forma que cada uno atenderá un mensaje de forma concurrente. Imprimir el PID del proceso
+// servidor para comprobarlo. Para terminar el servidor, enviar la señal SIGTERM al grupo de procesos.
+
+
+
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -53,6 +61,57 @@ int main(int argc, char *argv[]) {
     char host[NI_MAXHOST]; // Buffer para el nombre del host del cliente
     char serv[NI_MAXSERV]; // Buffer para el nombre del servicio del cliente
 
-    
+    struct sockaddr_storage client_addr; // Dirección del cliente
+    socklen_t client_len = sizeof(client_addr); // Longitud de la dirección del cliente
+
+    int status;
+    for(int i = 0; i < 2; i++) {
+        pid_t pid=fork();
+        if(pid==0) {
+            while (1) {
+                // Recibe el comando del cliente
+                ssize_t bytes = recvfrom(sd, comando, 2, 0, (struct sockaddr *) &client_addr, &client_len);
+                if (bytes == -1) {
+                    perror("recvfrom()");
+                    return -1;
+                }
+                comando[1] = '\0';
+                // Obtiene el nombre del host y del servicio del cliente
+                getname(info((struct sockaddr *) &client_addr, client_len, host, NI_MAXHOST, serv, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV));
+
+                printf("%i byte(s) de %s:%s cuyo PID: %d\n", bytes, host, serv, getpid());
+                time_t tiempo = time(NULL);
+                struct tm *tm = localtime(&tiempo);
+                
+                // Procesa el comando y envía la respuesta al cliente
+                char *respuesta = process_command(comando[0], tm);
+                sendto(sd, respuesta, strlen(respuesta), 0, (struct sockaddr *) &client_addr, client_len);
+            }
+        }
+        else{
+            pid=wait(&status);
+        }
+    }
     return 0;
+}
+
+char* process_command(char comando, struct tm *tm) {
+    static char buf[50];
+    size_t bytes;
+
+    switch(comando) {
+        case 't':
+            bytes = strftime(buf, 49, "%I:%M:%S %p", tm);
+            buf[bytes] = '\0';
+            break;
+        case 'd':
+            bytes = strftime(buf, 49, "%Y-%m-%d", tm);
+            buf[bytes] = '\0';
+            break;
+        default:
+            strcpy(buf, "Comando no soportado.");
+            break;
+    }
+
+    return buf;
 }

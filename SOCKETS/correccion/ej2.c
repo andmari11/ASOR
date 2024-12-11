@@ -1,3 +1,26 @@
+// Ejercicio 2. Escribir un servidor UDP de hora de forma que:
+// ● La dirección y el puerto son el primer y segundo argumento del programa. Las direcciones
+//   pueden expresarse en cualquier formato (nombre de host, notación de punto...). Además,
+//   el servidor debe funcionar con direcciones IPv4 e IPv6 .
+// ● El servidor recibirá un comando (codificado en un carácter), de forma que ‘t’ devuelva la
+//   hora, ‘d’ devuelve la fecha y ‘q’ termina el proceso servidor.
+// ● En cada mensaje el servidor debe imprimir el nombre y puerto del cliente, usar getnameinfo(3)
+
+/*
+    1. Se debe inicializar la estructura hints a cero y configurarla (flags, familia y tipo).
+    2. Se debe llamar a getaddrinfo para obtener la información de la dirección 
+        arg[1] = nombre del host
+        arg[2] = puerto
+    3. Se debe crear un socket usando la información de dirección obtenida de getaddrinfo (socket(res.family, res.socktype, res.protocol))
+    4. Se debe enlazar el socket a la dirección (bind(soscket, res.addr, res.protocol)) y liberar la memoria asignada por getaddrinfo
+    5. Se debe recibir un comando del cliente (recvfrom(socket, buffer, size_array, 0, client_addr, client_len))
+    6. Se debe convertir la hora actual a hora local (time(NULL), localtime(&t))
+    7. Se debe enviar la hora o la fecha al cliente (sendto(socket, ret, size_array, 0, client_addr, client_len))
+    
+    
+*/
+
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>

@@ -1,3 +1,10 @@
+// Ejercicio 3. Escribir el cliente para el servidor de hora. El cliente recibirá como argumentos la
+// dirección del servidor, el puerto del servidor y el comando. Por ejemplo, para solicitar la hora,
+// ./time_client 192.128.0.1 3000 t
+
+
+
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
